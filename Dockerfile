@@ -31,8 +31,8 @@ COPY etc/* /etc/lighttpd/
 COPY wlib/* /var/www/localhost/wlib
 RUN chmod 0664 /etc/lighttpd/*
 RUN chgrp lighttpd etc/lighttpd/*
-RUN chgrp lighttpd /var/www/localhost/htdocs
-RUN chmod 0775 /var/www/localhost/htdocs
+RUN chgrp lighttpd /var/www/localhost/htdocs /var/www/localhost/wlib
+RUN chmod 0775 /var/www/localhost/htdocs /var/www/localhost/wlib
 
 COPY *.py /var/www/localhost/cgi-bin/
 COPY *.html /var/www/localhost/htdocs/

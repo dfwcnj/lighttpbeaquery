@@ -1,5 +1,9 @@
 import os
 import sys
+import json
+
+import beaquery
+from beaquery import beaqueryq
 
 class BEAHier():
 
@@ -11,30 +15,70 @@ class BEAHier():
         "REQUEST_URI", "SCRIPT_FILENAME", "SCRIPT_NAME", "SERVER_ADMIN",
         "SERVER_NAME", "SERVER_PORT", "SERVER_SOFTWARE",
         ]
+        self.bhf = '/var/www/localhost/htdocs/beahierarchy.html'
+        self.bhj = '/var/www/localhost/wlib/beahierarchy.json'
+        self.BN = beaqueryq.BEAQueryQ()
+        self.cfn = 'beahier.py'
+
+    def renewform(self):
+        htmla=[]
+        htmla.append('<html><body>')
+        htmla.append('<form action="%s" method="GET">' % (self.cfn))
+
+        htmla.append('<label for "action">action:</label>')
+        htmla.append('<select name="action">')
+        for i in ['ShoworUpdate', 'Show', 'Update']:
+            htmla.append('<option value="%s" >%s</option>' % (i,i))
+
+        htmla.append('<input type="submit" value="Submit">')
+        htmla.append('</form>')
+        htmla.append('<footer>')
+        htmla.append('Show can take a while the first time it is invoked')
+        htmla.append('</footer>')
+        htmla.append('<footer>')
+        htmla.append('Update will always take a while')
+        htmla.append('</footer>')
+        htmla.append('</body></html>')
+        return htmla
+
+    def updatehier(self):
+
+        hd = self.BN.hierarchy('json')
+        js = json.JSONEncoder().encode(hd)
+        nfn=self.bhj.replace('.json', '.txt')
+        with open(nfn, 'w') as fp:
+            fp.write(js)
+            print('updatehier: updating json', file=sys.stderr)
+            os.replace(nfn, self.bhj)
+
+        htm = self.BN.hierarchyhtml(hd)
+        nfn=self.bhf.replace('.html', '.txt')
+        with open(nfn, 'w') as fp:
+            fp.write(htm)
+            print('updatehier: updating html', file=sys.stderr)
+            os.replace(nfn, self.bhf)
+
+        print("Content-Type: text/html\n\n")
+        print(htm)
 
     def beahier(self):
-        bhf = '/var/www/localhost/htdocs/beahierarchy.html'
-        bhj = '/var/www/localhost/wlib/beahierarchy.json'
-        try:
-            with open(bhf) as fp:
+        if os.path.exists(self.bhf):
+            with open(self.bhf) as fp:
                htm = fp.read()
                print("Content-Type: text/html\n\n")
                print(htm)
                sys.exit()
-        except Exception as e:
-            import beaquery
-            from beaquery import beaqueryq
-            BN = beaqueryq.BEAQueryQ()
-
-            hd = BN.hierarchy('json')
-            if not os.path.exists(bhj):
+        else:
+            hd = self.BN.hierarchy('json')
+            js = json.JSONEncoder().encode(hd)
+            if not os.path.exists(self.bhj):
                 print('beahier: saving json', file=sys.stderr)
-                with open(bhj, 'w') as fp:
-                    fp.write(hd)
+                with open(self.bhj, 'w') as fp:
+                    fp.write(js)
 
-            htm = BN.hierarchyhtml(hd)
+            htm = self.BN.hierarchyhtml(hd)
             print('beahier: saving html', file=sys.stderr)
-            with open(bhf, 'w') as fp:
+            with open(self.bhf, 'w') as fp:
                 fp.write(htm)
 
             print("Content-Type: text/html\n\n")
@@ -53,11 +97,34 @@ class BEAHier():
                 print('%s<br>' % (v))
         print('</body></html>')
 
+    def beahierform(self):
+         #print("Content-Type: text/html\n\n")
+         htmla=self.renewform()
+         print(''.join(htmla))
 
 def main():
 
     CF = BEAHier()
-    CF.beahier()
+    # CF.updatehier() # for debugging
+
+
+    if 'QUERY_STRING' in os.environ:
+        qs=''
+        if len(os.environ['QUERY_STRING']) > 0 :
+            qs=os.environ['QUERY_STRING']
+            print('%s' % (qs), file=sys.stderr)
+            if qs == 'action=Update':
+                CF.updatehier()
+            elif qs == 'action=Show':
+                CF.beahier()
+            else:
+                CF.beahierform()
+        else:
+            print('truncated QUERY_STRING', file=sys.stderr)
+            CF.beahierform()
+    else:
+        print('no QUERY_STRING', file=sys.stderr)
+        CF.beahierform()
 
 if __name__ == '__main__':
     main()
