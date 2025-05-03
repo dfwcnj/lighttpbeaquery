@@ -239,7 +239,7 @@ class BEAdata():
 
         htmla.append('<label for "format">format:</label>')
         htmla.append('<select name="format">')
-        for i in ['HTML', 'CSV']:
+        for i in ['HTML', 'CSV', 'CSVZipFile']:
             htmla.append('<option value="%s" >%s</option>' % (i,i))
 
         htmla.append('<input type="submit" value="Submit">')
@@ -293,6 +293,29 @@ class BEAdata():
         htmla.append('<footer><a href="beahier.py" target="_blank">BEA data structure</a></footer>')
         htmla.append('</body></html>')
         return htmla
+
+    def csvzipfilename(self, qsd):
+        dn = qsd['DatasetName'][0]
+        now=datetime.datetime.now()
+        did=''
+        if 'TableName' in qsd.keys():
+            did=qsd['TableName'][0]
+        elif 'TableID' in qsd.keys():
+            did=qsd['TableID'][0]
+        elif 'SeriesID' in qsd.keys():
+            did=qsd['SeriesID'][0]
+        elif 'Indicator' in qsd.keys():
+            did=qsd['Indicator'][0]
+        elif 'TypeOfInvestment' in qsd.keys():
+            did=qsd['TypeOfInvestment'][0]
+        elif 'TypeOfService' in qsd.keys():
+            did=qsd['TypeOfService'][0]
+        elif 'Channel' in qsd.keys():
+            did=qsd['Channel'][0]
+
+        ymd='%d%d%d' % (now.year,now.month,now.day)
+        fn='%s%s%s.zip' % (dn,did,ymd)
+        return fn
 
     def csvfilename(self, qsd):
         dn = qsd['DatasetName'][0]
@@ -371,6 +394,17 @@ class BEAdata():
                             print('Content-Type: text/csv')
                             print('Content-Disposition: inline;filename=%s\n\n' % (fn))
                             self.BQ.print2csv(data)
+                        if qsd['format'][0] == 'CSVZipFile':
+                            fn = self.csvzipfilename(qsd)
+                            qsd['csvzipfn'] = [fn]
+                            args = self.d2ns(qsd)
+
+                            zfn = self.BQ.d2csvzipfile(data, args)
+
+                            with open(zfn, 'rb') as fzp:
+                                print('Content-Type: application/zip')
+                                print('Content-Disposition: inline;filename=%s\n\n' % (zfn))
+                                sys.stdout.buffer.write(fzp.read())
                         elif qsd['format'][0] == 'HTML':
                             html = self.BQ.d2html(data, args)
                             print("Content-Type: text/html\n\n")
