@@ -167,10 +167,10 @@ class BEAdata():
                 for i in range(1, len(bds[dsn]['ParameterValue'][pn])):
                     pv = bds[dsn]['ParameterValue'][pn][i]
                     if pn == 'ShowMillions' and pv[0] == 'N':
-                        htmla.append('<option value="%s" label="%s" selected="selected" >' % (pv[0], pv[1]))
+                        htmla.append('<option value="%s" label="%s" selected="selected" >%s</option>' % (pv[0], pv[1],pv[1]))
                     else:
-                        htmla.append('<option value="%s" label="%s">' % \
-                                 (pv[0], pv[1]))
+                        htmla.append('<option value="%s" label="%s">%s</option>' % \
+                                 (pv[0], pv[1], pv[1]))
             else:
                 print(bds[dsn]['Parameter'][i])
                 sys.exit()
@@ -207,10 +207,10 @@ class BEAdata():
                 for i in range(1, len(bds[dsn]['ParameterValue'][pn])):
                     pv = bds[dsn]['ParameterValue'][pn][i]
                     if pn == 'ShowMillions' and pv[0] == 'N':
-                        htmla.append('<option value="%s" label="%s" selected="selected" >' % (pv[0], pv[1]))
+                        htmla.append('<option value="%s" label="%s" selected="selected" >%s</option>' % (pv[0], pv[1], pv[1]))
                     else:
-                        htmla.append('<option value="%s" label="%s">' % \
-                                 (pv[0], pv[1]))
+                        htmla.append('<option value="%s" label="%s">%s</option>' % \
+                                 (pv[0], pv[1], pv[1]))
             else:
                 print(bds[dsn]['Parameter'][i])
                 sys.exit()
@@ -392,18 +392,27 @@ class BEAdata():
                             fn = self.csvfilename(qsd)
 
                             print('Content-Type: text/csv')
-                            print('Content-Disposition: inline;filename=%s\n\n' % (fn))
+                            print('Content-Disposition: attachment;filename=%s\n\n' % (fn))
                             self.BQ.print2csv(data)
                         if qsd['format'][0] == 'CSVZipFile':
                             fn = self.csvzipfilename(qsd)
-                            qsd['csvzipfn'] = [fn]
+                            qsd['csvzipfn'] = ['/tmp/BEA/%s' % (fn)]
                             args = self.d2ns(qsd)
 
                             zfn = self.BQ.d2csvzipfile(data, args)
 
+                            ct=bytes('Content-Type: application/octet-stream\n', 'utf-8')
+                            #cda=bytes('Content-Disposition: attachment;\n',
+                            #          'utf-8')
+                            cdf=bytes('Content-Disposition: filename="%s";\n\n' % (fn), 'utf-8')
+                            print(ct, file=sys.stderr)
+                            #print(cda, file=sys.stderr)
+                            print(cdf, file=sys.stderr)
+
                             with open(zfn, 'rb') as fzp:
-                                print('Content-Type: application/zip')
-                                print('Content-Disposition: inline;filename=%s\n\n' % (zfn))
+                                sys.stdout.buffer.write(ct)
+                                #sys.stdout.buffer.write(cda)
+                                sys.stdout.buffer.write(cdf)
                                 sys.stdout.buffer.write(fzp.read())
                         elif qsd['format'][0] == 'HTML':
                             html = self.BQ.d2html(data, args)
