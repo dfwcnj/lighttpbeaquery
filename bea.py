@@ -162,7 +162,8 @@ class BEAdata():
                 htmla.append('<select name="%s" id="%s"><br>' % (pn,pn))
 
             if av != '':
-                htmla.append('<option value="%s" label="%s">' % (av, 'AllValue'))
+                avs = 'AllValue'
+                htmla.append('<option value="%s" label="%s">%s</option>' % (av,avs,avs))
             if pn in bds[dsn]['ParameterValue']:
                 for i in range(1, len(bds[dsn]['ParameterValue'][pn])):
                     pv = bds[dsn]['ParameterValue'][pn][i]
@@ -202,7 +203,8 @@ class BEAdata():
                 htmla.append('<select name="%s" id="%s"><br>' % (pn,pn))
 
             if av != '':
-                htmla.append('<option value="%s" label="%s">' % (av, 'AllValue'))
+                avs = 'AllValue'
+                htmla.append('<option value="%s" label="%s">%s</option>' % (av,avs,avs))
             if pn in bds[dsn]['ParameterValue']:
                 for i in range(1, len(bds[dsn]['ParameterValue'][pn])):
                     pv = bds[dsn]['ParameterValue'][pn][i]
