@@ -242,14 +242,17 @@ class BEAdata():
         htmla.append('<label for "format">format:</label>')
         htmla.append('<select name="format">')
         for i in ['HTML', 'CSV', 'CSVZipFile']:
-            htmla.append('<option value="%s" >%s</option>' % (i,i))
+            if i== 'HTML':
+                htmla.append('<option value="%s" selected>%s</option>' % (i,i))
+            else:
+                htmla.append('<option value="%s" >%s</option>' % (i,i))
 
         htmla.append('<input type="submit" value="Submit">')
         htmla.append('</form')
         htmla.append('</div>')
         return htmla
 
-    def beadatapage(self, bds, qs):
+    def beadatapage(self, bds, qs, msg):
         qsd = parse_qs(qs)
         dsn = qsd['DatasetName'][0]
         htmla=[]
@@ -257,6 +260,8 @@ class BEAdata():
 
         htmla.extend(self.beadataform(bds, dsn))
 
+        if msg != '':
+            htmla.append('<footer>%s</footer>' % (msg))
         htmla.append('<footer>BEA forbids >3 ALL parameters</footer>')
         htmla.append('<footer><a href="beahier.py" target="_blank">BEA data structure</a></footer>')
         htmla.append('</body></html>')
@@ -356,15 +361,29 @@ class BEAdata():
             print('\n'.join(dsp))
         else:
             qsd = parse_qs(qs)
+            dsn = qsd['DatasetName'][0]
             # print a page to chose a dataset
             if len(qsd.keys()) == 1:
-                dp = self.beadatapage(bds, qs)
+                dp = self.beadatapage(bds, qs, msg)
                 print("Content-Type: text/html\n\n")
                 print('\n'.join(dp))
             elif len(qsd.keys()) == 2:
-                print('beahome: should not happen', file=sys.stderr)
-                sys.exit()
+                msg = 'Did you leave a parameter blank?'
+                dp = self.beadatapage(bds, qs, msg)
+                print("Content-Type: text/html\n\n")
+                print('\n'.join(dp))
             else:
+                for i in range(1, len(bds[dsn]['Parameter'])):
+                    pn = bds[dsn]['Parameter'][i][0]
+                    if dsn in ['NIPA','NIUnderlyingDetail']:
+                        if pn == 'TableID': continue
+                    if pn not in qsd.keys():
+                        msg = 'Please enter a %s value' % (pn)
+                        dp = self.beadatapage(bds, qs, msg)
+                        print("Content-Type: text/html\n\n")
+                        print('\n'.join(dp))
+                        return
+
                 # we supposedly have enough parameters to retrieve data
                 args = self.d2ns(qsd) # beaquery wants types.SimpleNamespace
                 data = self.getbeadata(bds, args.DatasetName, args)
@@ -390,6 +409,8 @@ class BEAdata():
                    print('\n'.join(dsp))
                 else:
                     if 'format' in qsd:
+                        if qsd['format'][0] == '':
+                            qsd['format'][0] = 'HTML'
                         if qsd['format'][0] == 'CSV':
                             fn = self.csvfilename(qsd)
 
