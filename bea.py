@@ -149,7 +149,7 @@ class BEAdata():
             if pn == 'Year': # choices too complicated for a select
                 cmt = 'comma separated list, or X for all'
                 htmla.append('<label>%s %s' % (pn, cmt))
-                htmla.append('<input type="text" name="Year"><br>')
+                htmla.append('<input type="text" name="Year" required><br>')
                 htmla.append('</label>')
                 continue
 
