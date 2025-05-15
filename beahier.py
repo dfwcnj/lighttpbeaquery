@@ -23,7 +23,7 @@ class BEAHier():
     def renewform(self):
         htmla=[]
         htmla.append('<html><body>')
-        htmla.append('<form action="%s" method="GET">' % (self.cfn))
+        htmla.append('<form action="%s" method="GET" target="_blank">' % (self.cfn))
 
         htmla.append('<label for "action">action:</label>')
         htmla.append('<select name="action">')

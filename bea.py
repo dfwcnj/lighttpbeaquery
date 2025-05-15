@@ -33,17 +33,17 @@ class BEAdata():
             'UnderlyingGDPbyIndustry' : self.beasel,
         }
         self.getdatamap = {
-            'NIPA' : self.getnipadata,
-            'NIUnderlyingDetail' : self.getniunderlyingdetaildata,
-            'MNE' : self.getmnedata,
-            'FixedAssets' : self.getfixedassetsdata,
-            'ITA' : self.getitadata,
-            'IIP' : self.getiipdata,
-            'InputOutput' : self.getinputoutputdata,
-            'IntlServTrade' : self.getintlservtradedata,
-            'IntlServSTA' : self.getintlservstadata,
-            'GDPbyIndustry' : self.getgdpbyindustrydata,
-            'Regional' : self.getregionaldata,
+            'NIPA'                    : self.getnipadata,
+            'NIUnderlyingDetail'      : self.getniunderlyingdetaildata,
+            'MNE'                     : self.getmnedata,
+            'FixedAssets'             : self.getfixedassetsdata,
+            'ITA'                     : self.getitadata,
+            'IIP'                     : self.getiipdata,
+            'InputOutput'             : self.getinputoutputdata,
+            'IntlServTrade'           : self.getintlservtradedata,
+            'IntlServSTA'             : self.getintlservstadata,
+            'GDPbyIndustry'           : self.getgdpbyindustrydata,
+            'Regional'                : self.getregionaldata,
             'UnderlyingGDPbyIndustry' : self.getunderlyinggdpbyindustrydata,
         }
 
@@ -271,7 +271,7 @@ class BEAdata():
         bdsa = bds['Datasets']
         htmla=[]
         htmla.append('<div class="dataset">')
-        htmla.append('<form action="bea.py" id="bdsf" method="GET">')
+        htmla.append('<form action="bea.py" id="bdsf" method="GET" target="_blank">')
 
         htmla.append('<label for "dataset">BEA Dataset:</label>')
         htmla.append('<select name="DatasetName">')
@@ -373,6 +373,7 @@ class BEAdata():
                 print("Content-Type: text/html\n\n")
                 print('\n'.join(dp))
             else:
+                # check for missing parameter values
                 for i in range(1, len(bds[dsn]['Parameter'])):
                     pn = bds[dsn]['Parameter'][i][0]
                     if dsn in ['NIPA','NIUnderlyingDetail']:
@@ -457,8 +458,6 @@ class BEAdata():
 
 def main():
 
-    #qs = 'DatasetName=MNE'
-    #os.environ['QUERY_STRING'] = qs
     CF = BEAdata()
     bds = CF.loadbds()
     CF.beahome(bds)
